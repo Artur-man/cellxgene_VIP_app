@@ -1,0 +1,19 @@
+FROM ubuntu:18.04
+LABEL author="artur.manukyan@umassmed.edu"
+
+# configure image and install anaconda
+RUN apt-get -y update
+RUN apt-get -y install cpio git make gcc wget
+RUN wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh
+RUN bash Anaconda3-2020.02-Linux-x86_64.sh -b
+RUN export PATH="\$HOME/anaconda3/bin:\$PATH"
+RUN echo \$PATH
+
+# build cellxgene VIP
+RUN git clone https://github.com/interactivereport/cellxgene_VIP.git
+RUN /root/anaconda3/bin/conda env create --name VIP -f cellxgene_VIP/VIP.yml
+
+# build cellxgene
+COPY userinfo.js /
+RUN sed -i '41i cp userinfo.js cellxgene/client/src/reducers/.' cellxgene_VIP/config.sh
+RUN ./cellxgene_VIP/config.sh
